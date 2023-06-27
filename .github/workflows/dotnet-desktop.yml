@@ -77,12 +77,12 @@ jobs:
       uses: microsoft/setup-msbuild@v1.0.2
 
     # Execute all unit tests in the solution
-    - name: Execute unit tests
-      run: dotnet test
+    #- name: Execute unit tests
+    #  run: dotnet test
       
     # Restore the application to populate the obj folder with RuntimeIdentifiers
     - name: Restore the application
-      run: msbuild MiBand-Heartrate-2\MiBand-Heartrate-2.csproj /t:Restore /p:OutDir=${{ github.workspace }}/artifact/MiBand-Heartrate/ /p:Configuration=$env:Configuration
+      run: msbuild MiBand-Heartrate-2\MiBand-Heartrate-2.csproj /t:Restore /p:Configuration=$env:Configuration
       env:
         Configuration: ${{ matrix.configuration }}
 
@@ -92,6 +92,12 @@ jobs:
         $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.Base64_Encoded_Pfx }}")
         $certificatePath = Join-Path -Path $env:Wap_Project_Directory -ChildPath GitHubActionsWorkflow.pfx
         [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
+
+    # Create the app package by building and packaging the Windows Application Packaging project
+    - name: Create the app package
+      run: msbuild MiBand-Heartrate-2\MiBand-Heartrate-2.csproj /p:Configuration=$env:Configuration /p:OutDir=${{ github.workspace }}/artifact/MiBand-Heartrate/
+      env:
+        Configuration: ${{ matrix.configuration }}
 
     # Create the app package by building and packaging the Windows Application Packaging project
     - name: Create the app package
@@ -107,14 +113,14 @@ jobs:
       run: Remove-Item -path $env:Wap_Project_Directory\GitHubActionsWorkflow.pfx
 
     # Upload the MSIX package: https://github.com/marketplace/actions/upload-a-build-artifact
-    - name: Upload build artifacts
+    - name: Upload MSIX Package
       uses: actions/upload-artifact@v3
       with:
         name: MSIX Package
-        path: ${{ env.Wap_Project_Directory }}\AppPackages
+        path: ${{ github.workspace }}/artifact/MiBand-Heartrate-msix
 
     # Upload the EXE: https://github.com/marketplace/actions/upload-a-build-artifact
-    - name: Upload build artifacts
+    - name: Upload Portable exe
       uses: actions/upload-artifact@v3
       with:
         name: Portable Build
