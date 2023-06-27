@@ -1,0 +1,48 @@
+name: Build Application and Make Release
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+
+  build_release:
+    name: Build Release
+    uses: ./.github/workflows/build.yml
+    with:
+      build_type: Release
+
+  create_release:
+    needs: build_release
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: 'true'
+          path: 'PrismLauncher-source'
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+      - name: Grab and store version
+        run: |
+          tag_name=$(echo ${{ github.ref }} | grep -oE "[^/]+$")
+          echo "VERSION=$tag_name" >> $GITHUB_ENV
+      - name: Package artifacts properly
+        run: |
+          zip -r -9 "../${NAME}-${{ env.VERSION }}.zip" ${{ github.workspace }}/artifact/${{ env.App_Name }}-${{ matrix.configuration }}/
+
+      - name: Create release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          name: MiBand Heartrate Portable
+          draft: true
+          prerelease: false
+          files: |
+            MiBand-Heartrate-Portable.zip
