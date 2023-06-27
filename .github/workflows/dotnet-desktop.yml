@@ -87,41 +87,41 @@ jobs:
         Configuration: ${{ matrix.configuration }}
 
     # Decode the base 64 encoded pfx and save the Signing_Certificate
-    - name: Decode the pfx
-      run: |
-        $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.Base64_Encoded_Pfx }}")
-        $certificatePath = Join-Path -Path $env:Wap_Project_Directory -ChildPath GitHubActionsWorkflow.pfx
-        [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
+    #- name: Decode the pfx
+    #  run: |
+    #    $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.Base64_Encoded_Pfx }}")
+    #    $certificatePath = Join-Path -Path $env:Wap_Project_Directory -ChildPath GitHubActionsWorkflow.pfx
+    #    [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
 
     # Create the app package by building and packaging the Windows Application Packaging project
     - name: Create the app package
-      run: msbuild MiBand-Heartrate-2\MiBand-Heartrate-2.csproj /p:Configuration=$env:Configuration /p:OutDir=${{ github.workspace }}/artifact/MiBand-Heartrate/
+      run: msbuild MiBand-Heartrate-2\MiBand-Heartrate-2.csproj /p:Configuration=$env:Configuration /p:OutDir=${{ github.workspace }}/artifact/MiBand-Heartrate-${{ matrix.configuration }}/
       env:
         Configuration: ${{ matrix.configuration }}
 
     # Create the app package by building and packaging the Windows Application Packaging project
-    - name: Create the app package
-      run: msbuild MiBand-Heartrate-2\MiBand-Heartrate-2.csproj /p:Configuration=$env:Configuration /p:OutDir=${{ github.workspace }}/artifact/MiBand-Heartrate-msix /p:UapAppxPackageBuildMode=$env:Appx_Package_Build_Mode /p:AppxBundle=$env:Appx_Bundle /p:PackageCertificateKeyFile=GitHubActionsWorkflow.pfx /p:PackageCertificatePassword=${{ secrets.Pfx_Key }}
-      env:
-        Appx_Bundle: Always
-        Appx_Bundle_Platforms: x86|x64
-        Appx_Package_Build_Mode: StoreUpload
-        Configuration: ${{ matrix.configuration }}
+    #- name: Create the app package
+    #  run: msbuild MiBand-Heartrate-2\MiBand-Heartrate-2.csproj /p:Configuration=$env:Configuration /p:OutDir=${{ github.workspace }}/artifact/MiBand-Heartrate-msix-${{ matrix.configuration }}/ /p:UapAppxPackageBuildMode=$env:Appx_Package_Build_Mode /p:AppxBundle=$env:Appx_Bundle /p:PackageCertificateKeyFile=GitHubActionsWorkflow.pfx /p:PackageCertificatePassword=${{ secrets.Pfx_Key }}
+    #  env:
+    #    Appx_Bundle: Always
+    #    Appx_Bundle_Platforms: x86|x64
+    #    Appx_Package_Build_Mode: StoreUpload
+    #    Configuration: ${{ matrix.configuration }}
 
     # Remove the pfx
-    - name: Remove the pfx
-      run: Remove-Item -path $env:Wap_Project_Directory\GitHubActionsWorkflow.pfx
+    #- name: Remove the pfx
+    #  run: Remove-Item -path $env:Wap_Project_Directory\GitHubActionsWorkflow.pfx
 
     # Upload the MSIX package: https://github.com/marketplace/actions/upload-a-build-artifact
-    - name: Upload MSIX Package
-      uses: actions/upload-artifact@v3
-      with:
-        name: MSIX Package
-        path: ${{ github.workspace }}/artifact/MiBand-Heartrate-msix
+    #- name: Upload MSIX Package
+    #  uses: actions/upload-artifact@v3
+    #  with:
+    #    name: MSIX Package
+    #    path: ${{ github.workspace }}/artifact/MiBand-Heartrate-msix-${{ matrix.configuration }}/
 
     # Upload the EXE: https://github.com/marketplace/actions/upload-a-build-artifact
     - name: Upload Portable exe
       uses: actions/upload-artifact@v3
       with:
         name: Portable Build
-        path: ${{ github.workspace }}/artifact/MiBand-Heartrate/
+        path: ${{ github.workspace }}/artifact/MiBand-Heartrate-${{ matrix.configuration }}/
