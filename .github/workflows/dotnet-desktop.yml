@@ -123,5 +123,5 @@ jobs:
     - name: Upload Portable exe
       uses: actions/upload-artifact@v3
       with:
-        name: Portable Build
+        name: Portable Build-${{ matrix.configuration }}
         path: ${{ github.workspace }}/artifact/MiBand-Heartrate-${{ matrix.configuration }}/
