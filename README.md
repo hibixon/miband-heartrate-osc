@@ -135,8 +135,8 @@ If "Send OSC to VRChat" is enabled, this app will continue to send the following
 |/avatar/parameters/HR/Pulse|Bool|True : QRS Interval (Temporarily set it to 1/5 of the RR interval) <br> False : Other times|
 |/avatar/parameters/HR/BeatToggle|Bool|Reverses with each heartbeat|
 |/avatar/parameters/HR/Connected|Bool|True if device is connected and sending data|
-|/avatar/parameters/HR/Min|Int|Minimum heart rate per min in session [0, 255]|
-|/avatar/parameters/HR/Max|Int|Maximum heart rate per min in session [0, 255]|
+|/avatar/parameters/HR/Min|Int|Minimum heart rate per min in session [0, 255] (not implemented yet)|
+|/avatar/parameters/HR/Max|Int|Maximum heart rate per min in session [0, 255] (not implemented yet)|
 
 #### Old Addresses
 
@@ -169,7 +169,7 @@ If "Send OSC to VRChat" is enabled, this app will continue to send the following
 
 * Open `MiBand-Heartrate.sln` with Visual Studio
 
-* Right-click on MiBand-Heartrate-2 solution and select generate
+* Right-click on MiBand-Heartrate solution and select generate
 
 
 ### Useful links
@@ -187,7 +187,7 @@ VRChat
 
 
 ### Thirdparty licenses
-Rug.Osc | [MIT Licence](https://bitbucket.org/rugcode/rug.osc/wiki/License)
+OscCore | [MIT Licence](https://github.com/tilde-love/osc-core/blob/master/LICENSE)
 
 
 ### License

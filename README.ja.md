@@ -3,6 +3,7 @@
 Windows10でMi Bandデバイスで心拍数を取得します。
 
 ![miband heartrate](https://github.com/Eryux/miband-heartrate/raw/master/mibandheatrate-screen.png "Mi Band Heartrate screen")
+![miband heartrate newer version](https://github.com/TayouVR/miband-heartrate-osc/assets/31988415/9f7684bb-03ce-4dff-960e-78cacb0a31b4)
 
 ### サポートしているデバイス
 
@@ -77,17 +78,44 @@ Windows10でMi Bandデバイスで心拍数を取得します。
 
 設定例
 ``` xml
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8"?>
 <configuration>
-    <startup> 
-        <supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.8" />
-    </startup>
-    <appSettings>
-        <add key="useAutoConnect" value="true"/>
-        <add key="autoConnectDeviceVersion" value="5"/>
-        <add key="autoConnectDeviceName" value="Mi Smart Band 5"/>
-        <add key="autoConnectDeviceAuthKey" value="0123456789abcdef0123456789abcdef"/>
-    </appSettings>
+    <configSections>
+        <sectionGroup name="userSettings" type="System.Configuration.UserSettingsGroup, System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+            <section name="MiBand_Heartrate.Properties.Settings" type="System.Configuration.ClientSettingsSection, System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" allowExeDefinition="MachineToLocalUser" requirePermission="false" />
+        </sectionGroup>
+    </configSections>
+    <userSettings>
+        <MiBand_Heartrate.Properties.Settings>
+            <setting name="useAutoConnect" serializeAs="String">
+                <value>False</value>
+            </setting>
+            <setting name="autoConnectDeviceVersion" serializeAs="String">
+                <value>3</value>
+            </setting>
+            <setting name="autoConnectDeviceName" serializeAs="String">
+                <value>Mi Band 3</value>
+            </setting>
+            <setting name="autoConnectDeviceAuthKey" serializeAs="String">
+                <value>0123456789abcdef0123456789abcdef</value>
+            </setting>
+            <setting name="continuousMode" serializeAs="String">
+                <value>True</value>
+            </setting>
+            <setting name="fileOutput" serializeAs="String">
+                <value>False</value>
+            </setting>
+            <setting name="csvOutput" serializeAs="String">
+                <value>False</value>
+            </setting>
+            <setting name="oscOutput" serializeAs="String">
+                <value>True</value>
+            </setting>
+            <setting name="tryConnectOnStartup" serializeAs="String">
+                <value>False</value>
+            </setting>
+        </MiBand_Heartrate.Properties.Settings>
+    </userSettings>
 </configuration>
 ```
 
@@ -109,22 +137,39 @@ Windows10でMi Bandデバイスで心拍数を取得します。
 
 |Addresss|Value Type|Description|
 |-|-|-|
+|/avatar/parameters/HR/Int|Int|心拍数（毎分） [0, 255]|
+|/avatar/parameters/HR/Float|Float|正規化された心拍数（毎分） ([0, 255] -> [-1, 1])|
+|/avatar/parameters/HR/HalfFloat|Float|正規化された心拍数（毎分） ([0, 255] -> [0, 1]) <br> これはラジアルを使用したシェイプキーの操作をするときに有効です。[参考リンク](https://note.com/citron_vr/n/n7d54ebaebd83)|
+|/avatar/parameters/HR/Beat|Int|1 : QRS時間（ドックンの時間）(心拍の1/5の時間としています) <br> 0 : それ以外の時間|
+|/avatar/parameters/HR/Pulse|Bool|True : QRS時間（ドックンの時間）(心拍の1/5の時間としています) <br> False : それ以外の時間|
+|/avatar/parameters/HR/BeatToggle|Bool|心拍ごとに値が反転します|
+|/avatar/parameters/HR/Connected|Bool|True if device is connected and sending data|
+|/avatar/parameters/HR/Min|Int|Minimum heart rate per min in session [0, 255] (not implemented yet)|
+|/avatar/parameters/HR/Max|Int|Maximum heart rate per min in session [0, 255] (not implemented yet)|
+
+#### Old Addresses
+
+|Addresss|Value Type|Description|
+|-|-|-|
 |/avatar/parameters/HeartRateInt|Int|心拍数（毎分） [0, 255]|
 |/avatar/parameters/HeartRate3|Int|HeartRateIntと同じ|
 |/avatar/parameters/HeartRateFloat|Float|正規化された心拍数（毎分） ([0, 255] -> [-1, 1])|
 |/avatar/parameters/HeartRate|Float|HeartRateFloatと同じ|
+|/avatar/parameters/floatHR|Float|HeartRateFloatと同じ - for compatibility with other apps|
 |/avatar/parameters/HeartRateFloat01|Float|正規化された心拍数（毎分） ([0, 255] -> [0, 1]) <br> これはラジアルを使用したシェイプキーの操作をするときに有効です。[参考リンク](https://note.com/citron_vr/n/n7d54ebaebd83)|
 |/avatar/parameters/HeartRate2|Float|HeartRateFloat01と同じ|
 |/avatar/parameters/HeartBeatInt|Int|1 : QRS時間（ドックンの時間）(心拍の1/5の時間としています) <br> 0 : それ以外の時間|
 |/avatar/parameters/HeartBeatPulse|Bool|True : QRS時間（ドックンの時間）(心拍の1/5の時間としています) <br> False : それ以外の時間|
-er timesarameters/HeartBeatToggle|Bool|心拍ごとに値が反転します|
+|/avatar/parameters/HeartBeatToggle|Bool|心拍ごとに値が反転します|
+|/avatar/parameters/isHRConnected|Bool|True if device is connected and sending data - for compatibility with other apps|
 
 ### ビルドに必要なもの
 
 * Windows SDK 10.0.18362.1
 
   ダウンロード : [Windows SDK and emulator archive](https://developer.microsoft.com/en-US/windows/downloads/sdk-archive/)
-* Visual Studio 2019
+* A suitable IDE, like Visual Studio 2022 or Jetbrains Rider
+* .Net 7.0 or newer SDK
 
 
 ### Build
@@ -133,7 +178,7 @@ er timesarameters/HeartBeatToggle|Bool|心拍ごとに値が反転します|
 
 * `MiBand-Heartrate.sln`のソリューションを開いてください
 
-* MiBand-Heartrate-2のソリューションを右クリックしてビルド
+* MiBand-Heartrate のソリューションを右クリックしてビルド
 
 
 ### 便利なリンク
@@ -151,7 +196,7 @@ VRChat
 
 
 ### Thirdparty licenses
-Rug.Osc | [MIT Licence](https://bitbucket.org/rugcode/rug.osc/wiki/License)
+OscCore | [MIT Licence](https://github.com/tilde-love/osc-core/blob/master/LICENSE)
 
 
 ### License
