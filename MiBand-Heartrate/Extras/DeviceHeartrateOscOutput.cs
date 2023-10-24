@@ -78,6 +78,7 @@ namespace MiBand_Heartrate.Extras
 
 
         private bool _currentBeatToggle;
+        private bool _hrConnected;
 
         public DeviceHeartrateOscOutput(Device device)
         {
@@ -128,6 +129,9 @@ namespace MiBand_Heartrate.Extras
                     OnChangeHeartrate();
                     break;
             }
+            
+            // this might send a bit often, should check if thats an issue
+            SendOSCMessages(new[]{Addresses.DeviceConnected, Addresses.HRConnected}, _hrConnected);
         }
 
         private void OnChangeHeartrate()
@@ -156,9 +160,9 @@ namespace MiBand_Heartrate.Extras
             }, heartRateFloat01);
         }
 
-        private void OnHeartrateMonitorStarted()
-        {
-            SendOSCMessages(new[]{Addresses.DeviceConnected, Addresses.HRConnected}, true);
+        private void OnHeartrateMonitorStarted() {
+            _hrConnected = true;
+            SendOSCMessages(new[]{Addresses.DeviceConnected, Addresses.HRConnected}, _hrConnected);
             
             _cancellationTokenSource = new CancellationTokenSource();
             var _ = SendLoop(_cancellationTokenSource.Token);
@@ -166,7 +170,8 @@ namespace MiBand_Heartrate.Extras
 
         private void OnHeartrateMonitorStopped()
         {
-            SendOSCMessages(new[]{Addresses.DeviceConnected, Addresses.HRConnected}, false);
+            _hrConnected = false;
+            SendOSCMessages(new[]{Addresses.DeviceConnected, Addresses.HRConnected}, _hrConnected);
             
             Cancel();
         }
