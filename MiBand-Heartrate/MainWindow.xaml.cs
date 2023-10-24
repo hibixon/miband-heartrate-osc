@@ -18,10 +18,10 @@ namespace MiBand_Heartrate
             _model = (MainWindowViewModel)DataContext;
 
             // Restore window position
-            Left = Setting.Get("WindowLeft", (int)Left);
-            Top = Setting.Get("WindowTop", (int)Top);
-            Width = Setting.Get("WindowWidth", (int)MinWidth);
-            Height = Setting.Get("WindowHeight", (int)MinHeight);
+            Left = RegistrySetting.Get("WindowLeft", (int)Left);
+            Top = RegistrySetting.Get("WindowTop", (int)Top);
+            Width = RegistrySetting.Get("WindowWidth", (int)MinWidth);
+            Height = RegistrySetting.Get("WindowHeight", (int)MinHeight);
 
             // Verify if window isn't out of screen
             if (!IsOnScreen())
@@ -38,10 +38,10 @@ namespace MiBand_Heartrate
             }
 
             // Save window size and positions
-            Setting.Set("WindowLeft", (int)Left);
-            Setting.Set("WindowTop", (int)Top);
-            Setting.Set("WindowWidth", (int)Width);
-            Setting.Set("WindowHeight", (int)Height);
+            RegistrySetting.Set("WindowLeft", (int)Left);
+            RegistrySetting.Set("WindowTop", (int)Top);
+            RegistrySetting.Set("WindowWidth", (int)Width);
+            RegistrySetting.Set("WindowHeight", (int)Height);
         }
 
         bool IsOnScreen()
