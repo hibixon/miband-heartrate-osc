@@ -66,17 +66,44 @@ If you enable automatic connection, the `Manual Connect` button changes to a `Au
 
 Example
 ``` xml
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8"?>
 <configuration>
-    <startup> 
-        <supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.8" />
-    </startup>
-    <appSettings>
-        <add key="useAutoConnect" value="true"/>
-        <add key="autoConnectDeviceVersion" value="5"/>
-        <add key="autoConnectDeviceName" value="Mi Smart Band 5"/>
-        <add key="autoConnectDeviceAuthKey" value="0123456789abcdef0123456789abcdef"/>
-    </appSettings>
+    <configSections>
+        <sectionGroup name="userSettings" type="System.Configuration.UserSettingsGroup, System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+            <section name="MiBand_Heartrate.Properties.Settings" type="System.Configuration.ClientSettingsSection, System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" allowExeDefinition="MachineToLocalUser" requirePermission="false" />
+        </sectionGroup>
+    </configSections>
+    <userSettings>
+        <MiBand_Heartrate.Properties.Settings>
+            <setting name="useAutoConnect" serializeAs="String">
+                <value>False</value>
+            </setting>
+            <setting name="autoConnectDeviceVersion" serializeAs="String">
+                <value>3</value>
+            </setting>
+            <setting name="autoConnectDeviceName" serializeAs="String">
+                <value>Mi Band 3</value>
+            </setting>
+            <setting name="autoConnectDeviceAuthKey" serializeAs="String">
+                <value>0123456789abcdef0123456789abcdef</value>
+            </setting>
+            <setting name="continuousMode" serializeAs="String">
+                <value>True</value>
+            </setting>
+            <setting name="fileOutput" serializeAs="String">
+                <value>False</value>
+            </setting>
+            <setting name="csvOutput" serializeAs="String">
+                <value>False</value>
+            </setting>
+            <setting name="oscOutput" serializeAs="String">
+                <value>True</value>
+            </setting>
+            <setting name="tryConnectOnStartup" serializeAs="String">
+                <value>False</value>
+            </setting>
+        </MiBand_Heartrate.Properties.Settings>
+    </userSettings>
 </configuration>
 ```
 
@@ -99,22 +126,39 @@ If "Send OSC to VRChat" is enabled, this app will continue to send the following
 
 |Addresss|Value Type|Description|
 |-|-|-|
-|/avatar/parameters/HeartRateInt|Int|Heart rate par min [0, 255]|
+|/avatar/parameters/HR/Int|Int|Heart rate per min [0, 255]|
+|/avatar/parameters/HR/Float|Float|Normalized Heart rate ([0, 255] -> [-1, 1])|
+|/avatar/parameters/HR/HalfFloat|Float|Normalized Heart rate ([0, 255] -> [0, 1]) <br> This is useful when controlling shape keys with Radial.|
+|/avatar/parameters/HR/Beat|Int|1 : QRS Interval (Temporarily set it to 1/5 of the RR interval) <br> 0 : Other times|
+|/avatar/parameters/HR/Pulse|Bool|True : QRS Interval (Temporarily set it to 1/5 of the RR interval) <br> False : Other times|
+|/avatar/parameters/HR/BeatToggle|Bool|Reverses with each heartbeat|
+|/avatar/parameters/HR/Connected|Bool|True if device is connected and sending data|
+|/avatar/parameters/HR/Min|Int|Minimum heart rate per min in session [0, 255]|
+|/avatar/parameters/HR/Max|Int|Maximum heart rate per min in session [0, 255]|
+
+#### Old Addresses
+
+|Addresss|Value Type|Description|
+|-|-|-|
+|/avatar/parameters/HeartRateInt|Int|Heart rate per min [0, 255]|
 |/avatar/parameters/HeartRate3|Int|Same as HeartRateInt|
 |/avatar/parameters/HeartRateFloat|Float|Normalized Heart rate ([0, 255] -> [-1, 1])|
 |/avatar/parameters/HeartRate|Float|Same as HeartRateFloat|
+|/avatar/parameters/floatHR|Float|Same as HeartRateFloat - for compatibility with other apps|
 |/avatar/parameters/HeartRateFloat01|Float|Normalized Heart rate ([0, 255] -> [0, 1]) <br> This is useful when controlling shape keys with Radial.|
 |/avatar/parameters/HeartRate2|Float|Same as HeartRateFloat01|
 |/avatar/parameters/HeartBeatInt|Int|1 : QRS Interval (Temporarily set it to 1/5 of the RR interval) <br> 0 : Other times|
 |/avatar/parameters/HeartBeatPulse|Bool|True : QRS Interval (Temporarily set it to 1/5 of the RR interval) <br> False : Other times|
 |/avatar/parameters/HeartBeatToggle|Bool|Reverses with each heartbeat|
+|/avatar/parameters/isHRConnected|Bool|True if device is connected and sending data - for compatibility with other apps|
 
 ### Build requirements
 
 * Windows SDK 10.0.18362.1
 
   Download : [Windows SDK and emulator archive](https://developer.microsoft.com/en-US/windows/downloads/sdk-archive/)
-* Visual Studio 2019
+* A suitable IDE, like Visual Studio 2022 or Jetbrains Rider
+* .Net 7.0 or newer SDK
 
 
 ### Build

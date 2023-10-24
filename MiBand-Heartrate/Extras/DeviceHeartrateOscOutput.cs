@@ -18,41 +18,62 @@ namespace MiBand_Heartrate.Extras
         private static class Addresses
         {
             private const string ParametersAddress = "/avatar/parameters";
+            
+            private const string ApplicationPrefix = "HR";
 
             /// <summary>
             /// Heart rate par min [0, 255]
             /// </summary>
-            public static readonly string HeartRateInt = $"{ParametersAddress}/HeartRateInt";
-            public static readonly string HeartRate3 = $"{ParametersAddress}/HeartRate3";
+            public const string HeartRateInt = $"{ParametersAddress}/HeartRateInt";
+            public const string HeartRate3 = $"{ParametersAddress}/HeartRate3";
+            public const string HRInt = $"{ParametersAddress}/{ApplicationPrefix}/Int";
 
             /// <summary>
             /// Normalized Heart rate ([0, 255] -> [-1, 1])
             /// </summary>
-            public static readonly string HeartRateFloat = $"{ParametersAddress}/HeartRateFloat";
-            public static readonly string HeartRate = $"{ParametersAddress}/HeartRate";
+            public const string HeartRateFloat = $"{ParametersAddress}/HeartRateFloat";
+            public const string HeartRate = $"{ParametersAddress}/HeartRate";
+            public const string HeartRateFloatHR = $"{ParametersAddress}/floatHR";
+            public const string HRFloat = $"{ParametersAddress}/{ApplicationPrefix}/Float";
 
             /// <summary>
             /// Normalized Heart rate ([0, 255] -> [0, 1])
             /// </summary>
-            public static readonly string HeartRateFloat01 = $"{ParametersAddress}/HeartRateFloat01";
-            public static readonly string HeartRate2 = $"{ParametersAddress}/HeartRate2";
+            public const string HeartRateFloat01 = $"{ParametersAddress}/HeartRateFloat01";
+            public const string HeartRate2 = $"{ParametersAddress}/HeartRate2";
+            public const string HRFloatHalf = $"{ParametersAddress}/{ApplicationPrefix}/HalfFloat";
 
             /// <summary>
             /// 1 : QRS Interval (Temporarily set it to 1/5 of the RR interval)
             /// 0 : Other times
             /// </summary>
-            public static readonly string HeartBeatInt = $"{ParametersAddress}/HeartBeatInt";
+            public const string HeartBeatInt = $"{ParametersAddress}/HeartBeatInt";
+            public const string HRBeat = $"{ParametersAddress}/{ApplicationPrefix}/Beat";
 
             /// <summary>
             /// True : QRS Interval (Temporarily set it to 1/5 of the RR interval)
             /// False : Other times
             /// </summary>
-            public static readonly string HeartBeatPulse = $"{ParametersAddress}/HeartBeatPulse";
+            public const string HeartBeatPulse = $"{ParametersAddress}/HeartBeatPulse";
+            public const string HRPulse = $"{ParametersAddress}/{ApplicationPrefix}/Pulse";
 
             /// <summary>
             /// Reverses with each heartbeat
             /// </summary>
-            public static readonly string HeartBeatToggle = $"{ParametersAddress}/HeartBeatToggle";
+            public const string HeartBeatToggle = $"{ParametersAddress}/HeartBeatToggle";
+            public const string HRBeatToggle = $"{ParametersAddress}/{ApplicationPrefix}/BeatToggle";
+
+            /// <summary>
+            /// Is Device connected and sending data
+            /// </summary>
+            public const string DeviceConnected = $"{ParametersAddress}/isHRConnected";
+            public const string HRConnected = $"{ParametersAddress}/{ApplicationPrefix}/Connected";
+
+            /// <summary>
+            /// Min and Max Heartrate in session
+            /// </summary>
+            public const string MinHeartRate = $"{ParametersAddress}/{ApplicationPrefix}/Min";
+            public const string MaxHeartRate = $"{ParametersAddress}/{ApplicationPrefix}/Max";
         }
 
 
@@ -115,24 +136,38 @@ namespace MiBand_Heartrate.Extras
             var heartRateFloat = _device.Heartrate / 127f - 1f;
             var heartRateFloat01 = _device.Heartrate / 255f;
 
-            _udpClient.Send(new OscMessage(Addresses.HeartRateInt, heartRateInt).ToByteArray());
-            _udpClient.Send(new OscMessage(Addresses.HeartRate3, heartRateInt).ToByteArray());
+            SendOSCMessages(new[]{
+                Addresses.HeartRateInt, 
+                Addresses.HeartRate3, 
+                Addresses.HRInt
+            }, heartRateInt);
 
-            _udpClient.Send(new OscMessage(Addresses.HeartRateFloat, heartRateFloat).ToByteArray());
-            _udpClient.Send(new OscMessage(Addresses.HeartRate, heartRateFloat).ToByteArray());
+            SendOSCMessages(new[] {
+                Addresses.HeartRateFloat, 
+                Addresses.HeartRate, 
+                Addresses.HeartRateFloatHR, 
+                Addresses.HRFloat
+            }, heartRateFloat);
 
-            _udpClient.Send(new OscMessage(Addresses.HeartRateFloat01, heartRateFloat01).ToByteArray());
-            _udpClient.Send(new OscMessage(Addresses.HeartRate2, heartRateFloat01).ToByteArray());
+            SendOSCMessages(new[] {
+                Addresses.HeartRateFloat01, 
+                Addresses.HeartRate2, 
+                Addresses.HRFloatHalf
+            }, heartRateFloat01);
         }
 
         private void OnHeartrateMonitorStarted()
         {
+            SendOSCMessages(new[]{Addresses.DeviceConnected, Addresses.HRConnected}, true);
+            
             _cancellationTokenSource = new CancellationTokenSource();
             var _ = SendLoop(_cancellationTokenSource.Token);
         }
 
         private void OnHeartrateMonitorStopped()
         {
+            SendOSCMessages(new[]{Addresses.DeviceConnected, Addresses.HRConnected}, false);
+            
             Cancel();
         }
 
@@ -156,19 +191,25 @@ namespace MiBand_Heartrate.Extras
             }
         }
 
-        private async Task Send(int span, CancellationToken cancellationToken)
-        {
-            _udpClient.Send(new OscMessage(Addresses.HeartBeatInt, 1).ToByteArray());
-            _udpClient.Send(new OscMessage(Addresses.HeartBeatPulse, true).ToByteArray());
-            _udpClient.Send(new OscMessage(Addresses.HeartBeatToggle, _currentBeatToggle).ToByteArray());
+        private async Task Send(int span, CancellationToken cancellationToken) {
+            SendOSCMessages(new[]{Addresses.HeartBeatInt, Addresses.HRBeat}, 1);
+            SendOSCMessages(new[]{Addresses.HeartBeatPulse, Addresses.HRPulse}, true);
+            SendOSCMessages(new[]{Addresses.HeartBeatToggle, Addresses.HRBeatToggle}, _currentBeatToggle);
             
             // Wait for QRS interval
             await Task.Delay(span / 5, cancellationToken);
 
-            _udpClient.Send(new OscMessage(Addresses.HeartBeatInt, 0).ToByteArray());
-            _udpClient.Send(new OscMessage(Addresses.HeartBeatPulse, false).ToByteArray());
+            SendOSCMessages(new[]{Addresses.HeartBeatInt, Addresses.HRBeat}, 0);
+            SendOSCMessages(new[]{Addresses.HeartBeatPulse, Addresses.HRPulse}, false);
             
             _currentBeatToggle = !_currentBeatToggle;
+        }
+
+        private void SendOSCMessages(string[] addresses, params object[] args) {
+            foreach (var address in addresses) {
+                _udpClient.Send(new OscMessage(address, args).ToByteArray());
+            }
+            
         }
     }
 }

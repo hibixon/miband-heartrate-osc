@@ -1,6 +1,6 @@
-using System.Windows;
-using System.Windows.Input;
 using System.Text.RegularExpressions;
+using System.Windows.Input;
+using MiBand_Heartrate.Extras;
 
 namespace MiBand_Heartrate
 {
@@ -35,7 +35,7 @@ namespace MiBand_Heartrate
                     {
                         if (!Regex.IsMatch(Key, @"^[0-9a-f]{32}$", RegexOptions.IgnoreCase))
                         {
-                            Extras.MessageWindow.ShowError("Authentication key is not valid.", MessageBoxButton.OK);
+                            MessageWindow.ShowError("Authentication key is not valid.");
                             return;
                         }
 

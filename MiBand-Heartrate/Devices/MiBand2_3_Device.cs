@@ -5,10 +5,12 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using Windows.Devices.Bluetooth;
 using Windows.Devices.Bluetooth.GenericAttributeProfile;
 using Windows.Devices.Enumeration;
 using Windows.Storage.Streams;
+using MiBand_Heartrate.Extras;
 
 namespace MiBand_Heartrate.Devices
 {
@@ -31,19 +33,19 @@ namespace MiBand_Heartrate.Devices
         BluetoothLEDevice _connectedDevice;
 
 
-        GattDeviceService _heartrateService = null;
+        GattDeviceService _heartrateService;
 
-        GattCharacteristic _heartrateCharacteristic = null;
+        GattCharacteristic _heartrateCharacteristic;
 
-        GattCharacteristic _heartrateNotifyCharacteristic = null;
+        GattCharacteristic _heartrateNotifyCharacteristic;
 
-        GattDeviceService _sensorService = null;
+        GattDeviceService _sensorService;
 
 
 
-        Thread _keepHeartrateAliveThread = null;
+        Thread _keepHeartrateAliveThread;
 
-        bool _continuous = false;
+        bool _continuous;
 
         string _deviceId = "";
 
@@ -54,6 +56,11 @@ namespace MiBand_Heartrate.Devices
 
             Name = d.Name;
             Model = DeviceModel.MIBAND_2_3;
+            
+            // doesn't seem to work
+            //Properties.Settings.Default.autoConnectDeviceName = Name;
+            //Properties.Settings.Default.autoConnectDeviceName = "2_3";
+            //Properties.Settings.Default.Save();
         }
 
 
@@ -69,26 +76,27 @@ namespace MiBand_Heartrate.Devices
          */
         public override void Authenticate()
         {
-            var task = Task.Run(async () =>
-            {
-                GattDeviceServicesResult service = await _connectedDevice.GetGattServicesForUuidAsync(new Guid(AUTH_SRV_ID));
+            var task = Task.Run(async () => {
+                Guid guid = new Guid(AUTH_SRV_ID);
+                
+                // doesn't seem to work
+                //Properties.Settings.Default.autoConnectDeviceAuthKey = guid.ToString();
+                //Properties.Settings.Default.Save();
+                
+                GattDeviceServicesResult service = await _connectedDevice.GetGattServicesForUuidAsync(guid);
 
-                if (service.Status == GattCommunicationStatus.Success && service.Services.Count > 0)
-                {
+                if (service.Status == GattCommunicationStatus.Success && service.Services.Count > 0) {
                     GattCharacteristicsResult characteristic = await service.Services[0].GetCharacteristicsForUuidAsync(new Guid(AUTH_CHAR_ID));
 
-                    if (characteristic.Status == GattCommunicationStatus.Success && characteristic.Characteristics.Count > 0)
-                    {
+                    if (characteristic.Status == GattCommunicationStatus.Success && characteristic.Characteristics.Count > 0) {
                         GattCommunicationStatus notify = await characteristic.Characteristics[0].WriteClientCharacteristicConfigurationDescriptorAsync(GattClientCharacteristicConfigurationDescriptorValue.Notify);
 
-                        if (notify == GattCommunicationStatus.Success)
-                        {
+                        if (notify == GattCommunicationStatus.Success) {
                             characteristic.Characteristics[0].ValueChanged += OnAuthenticateNotify;
 
                             _key = SHA256.HashData(Guid.NewGuid().ToByteArray()).Take(16).ToArray();
 
-                            using (var stream = new MemoryStream())
-                            {
+                            using (var stream = new MemoryStream()) {
                                 stream.Write(new byte[] { 0x01, 0x08 }, 0, 2);
                                 stream.Write(_key, 0, _key.Length);
                                 BLE.Write(characteristic.Characteristics[0], stream.ToArray());
@@ -115,7 +123,7 @@ namespace MiBand_Heartrate.Devices
                     }
                     else
                     {
-                        Extras.MessageWindow.ShowError("Authentication failed (1)");
+                        MessageWindow.ShowError("Authentication failed (1)");
                     }
                 }
                 else if (headers[1] == 0x02)
@@ -141,7 +149,7 @@ namespace MiBand_Heartrate.Devices
                     }
                     else
                     {
-                        Extras.MessageWindow.ShowError("Authentication failed (3)");
+                        MessageWindow.ShowError("Authentication failed (3)");
                     }
                 }
             }
@@ -273,7 +281,7 @@ namespace MiBand_Heartrate.Devices
                         {
                             BLE.Write(_heartrateCharacteristic, new byte[] { 0x15, 0x01, 0x01 });
 
-                            _keepHeartrateAliveThread = new Thread(new ThreadStart(RunHeartrateKeepAlive));
+                            _keepHeartrateAliveThread = new Thread(RunHeartrateKeepAlive);
                             _keepHeartrateAliveThread.Start();
                         }
                         else
@@ -288,7 +296,7 @@ namespace MiBand_Heartrate.Devices
                     }
                 }
 
-                System.Windows.Application.Current.Dispatcher.Invoke((Action)delegate {
+                Application.Current.Dispatcher.Invoke(delegate {
                     HeartrateMonitorStarted = true;
                 });
             });
@@ -327,7 +335,7 @@ namespace MiBand_Heartrate.Devices
                 _sensorService = null;
             }
 
-            System.Windows.Application.Current.Dispatcher.Invoke((Action)delegate {
+            Application.Current.Dispatcher.Invoke(delegate {
                 HeartrateMonitorStarted = false;
             });
 

@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MiBand_Heartrate"
         mc:Ignorable="d"
-        Title="Heartrate Monitor" Width="400" Height="360" MinHeight="360" MinWidth="400" Closing="Window_Closing"  Icon="icon.ico">
+        Title="Heartrate Monitor" Width="400" Height="420" MinHeight="420" MinWidth="400" Closing="Window_Closing"  Icon="icon.ico">
 
     <Window.Resources>
         <ResourceDictionary Source="Style.xaml"></ResourceDictionary>
@@ -79,12 +79,12 @@
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                         <Label Content="Min:"/>
-                        <Label Content="{Binding Device.Heartrate}"></Label>
+                        <Label Content="{Binding Device.MinHeartrate}"></Label>
                         <Label>bpm</Label>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                         <Label Content="Max: "/>
-                        <Label Content="{Binding Device.Heartrate}"></Label>
+                        <Label Content="{Binding Device.MaxHeartrate}"></Label>
                         <Label>bpm</Label>
                     </StackPanel>
                 </StackPanel>
@@ -93,6 +93,7 @@
 
         <GroupBox Header="Options" Margin="5">
             <StackPanel Margin="5">
+                <CheckBox Margin="0 2" IsChecked="{Binding UseAutoConnect, Mode=TwoWay}">Use Auto Connect</CheckBox>
                 <CheckBox Margin="0 2" IsChecked="{Binding ContinuousMode, Mode=TwoWay}">Enable continuous mode</CheckBox>
                 <CheckBox Margin="0 2" IsChecked="{Binding EnableCSVOutput, Mode=TwoWay}">Export data in CSV file</CheckBox>
                 <CheckBox Margin="0 2" IsChecked="{Binding EnableFileOutput, Mode=TwoWay}">Write realtime data in text file</CheckBox>

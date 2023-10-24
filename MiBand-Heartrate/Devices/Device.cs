@@ -48,20 +48,44 @@ namespace MiBand_Heartrate.Devices
         public DeviceModel Model { get; internal set; }
 
 
-        ushort _heartrate = 0;
+        ushort _heartrate;
 
-        public ushort Heartrate
-        {
+        public ushort Heartrate {
             get { return _heartrate; }
-            internal set
-            {
+            internal set {
                 _heartrate = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Heartrate"));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("MinHeartrate"));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("MaxHeartrate"));
             }
         }
 
 
-        bool _heartrateMonitorStarted = false;
+        ushort _minHeartrate = 1000;
+
+        public ushort MinHeartrate {
+            get { 
+                if (_heartrate < _minHeartrate && _heartrate != 0) {
+                    _minHeartrate = _heartrate;
+                }
+                return _minHeartrate;
+            }
+        }
+
+
+        ushort _maxHeartrate;
+
+        public ushort MaxHeartrate {
+            get { 
+                if (_heartrate > _maxHeartrate) {
+                    _maxHeartrate = _heartrate;
+                }
+                return _maxHeartrate; 
+            }
+        }
+
+
+        bool _heartrateMonitorStarted;
 
         public bool HeartrateMonitorStarted
         {
@@ -76,8 +100,6 @@ namespace MiBand_Heartrate.Devices
         public object DeviceStatus { get; internal set; }
 
         // --------------------------------------
-
-        public Device() { }
 
         public abstract void Dispose();
 

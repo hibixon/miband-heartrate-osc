@@ -1,7 +1,7 @@
 using System;
-using System.IO;
 using System.ComponentModel;
-
+using System.IO;
+using System.Text;
 using MiBand_Heartrate.Devices;
 
 namespace MiBand_Heartrate.Extras
@@ -31,13 +31,13 @@ namespace MiBand_Heartrate.Extras
 
         private void OnDeviceChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == "Heartrate" && Setting.Get("FileOutput", false))
+            if (e.PropertyName == "Heartrate" && Properties.Settings.Default.fileOutput)
             {
                 try
                 {
                     using (var f = File.Open(_filename, FileMode.Create, FileAccess.Write, FileShare.Read))
                     {
-                        byte[] data = System.Text.Encoding.UTF8.GetBytes(_device.Heartrate.ToString());
+                        byte[] data = Encoding.UTF8.GetBytes(_device.Heartrate.ToString());
                         f.Write(data, 0, data.Length);
                     }
                 }

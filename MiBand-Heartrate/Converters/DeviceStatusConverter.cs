@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Windows.Data;
+using MiBand_Heartrate.Devices;
 
 namespace MiBand_Heartrate
 {
@@ -10,16 +11,16 @@ namespace MiBand_Heartrate
         {
             string r = "No device connected";
 
-            if (value is Devices.Device)
+            if (value is Device)
             {
-                Devices.Device device = (Devices.Device)value;
+                Device device = (Device)value;
 
                 switch (device.Status)
                 {
-                    case Devices.DeviceStatus.ONLINE_UNAUTH:
+                    case DeviceStatus.ONLINE_UNAUTH:
                         r = string.Format("Connected to {0} | Not auth", device.Name);
                         break;
-                    case Devices.DeviceStatus.ONLINE_AUTH:
+                    case DeviceStatus.ONLINE_AUTH:
                         r = string.Format("Connected to {0} | Auth", device.Name);
                         break;
                 }

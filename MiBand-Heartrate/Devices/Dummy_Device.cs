@@ -6,12 +6,11 @@ namespace MiBand_Heartrate.Devices
 {
     public class Dummy_Device : Device
     {
-        bool _running = false;
+        bool _running;
 
-        Thread _worker = null;
+        Thread _worker;
 
-        public Dummy_Device() : base() 
-        {
+        public Dummy_Device() {
             Name = "Dummy";
         }
 
@@ -52,7 +51,7 @@ namespace MiBand_Heartrate.Devices
             {
                 _running = true;
 
-                _worker = new Thread(new ThreadStart(FakeHeartrateValueWorker));
+                _worker = new Thread(FakeHeartrateValueWorker);
                 _worker.Start();
 
                 HeartrateMonitorStarted = true;

@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.Configuration;
+using System.Windows;
 using System.Windows.Input;
 using Windows.Devices.Enumeration;
 using MiBand_Heartrate.Devices;
@@ -10,23 +11,19 @@ namespace MiBand_Heartrate
 {
     public class MainWindowViewModel : ViewModel
     {
-        Devices.Device _device = null;
+        Device _device;
 
-        public Devices.Device Device
-        {
-            get { return _device; }
-            set
-            {
-                if (_device != null)
-                {
+        public Device Device {
+            get => _device;
+            set {
+                if (_device != null) {
                     _device.PropertyChanged -= OnDevicePropertyChanged;
                     _device.Dispose();
                 }
 
                 _device = value;
 
-                if (_device != null)
-                {
+                if (_device != null) {
                     _device.PropertyChanged += OnDevicePropertyChanged;
                 }
 
@@ -36,15 +33,11 @@ namespace MiBand_Heartrate
             }
         }
 
-        bool _isConnected = false;
+        bool _isConnected;
 
-        public bool UseAutoConnect => UseAutoConnectSetting.ToLower() == "true";
-
-        public bool IsConnected
-        {
-            get { return _isConnected; }
-            set
-            {
+        public bool IsConnected {
+            get => _isConnected;
+            set {
                 _isConnected = value;
                 InvokePropertyChanged("IsConnected");
             }
@@ -52,162 +45,130 @@ namespace MiBand_Heartrate
 
         string _statusText = "No device connected";
 
-        public string StatusText
-        {
-            get { return _statusText; }
-            set
-            {
+        public string StatusText {
+            get => _statusText;
+            set {
                 _statusText = value;
                 InvokePropertyChanged("StatusText");
             }
         }
-
-        private string UseAutoConnectSetting => ConfigurationManager.AppSettings["useAutoConnect"];
-        private string DefaultDeviceVersionSetting => ConfigurationManager.AppSettings["autoConnectDeviceVersion"];
         
-        private string DefaultDeviceName => ConfigurationManager.AppSettings["autoConnectDeviceName"];
+        public bool UseAutoConnect {
+            get => Properties.Settings.Default.useAutoConnect;
+            set {
+                Properties.Settings.Default.useAutoConnect = value;
+                Properties.Settings.Default.Save();
+
+                InvokePropertyChanged("UseAutoConnect");
+            }
+        }
         
-        private string DefaultDeviceAuthKey => ConfigurationManager.AppSettings["autoConnectDeviceAuthKey"];
+        private string DefaultDeviceVersionSetting => Properties.Settings.Default.autoConnectDeviceVersion;
+        
+        private string DefaultDeviceName => Properties.Settings.Default.autoConnectDeviceName;
+        
+        private string DefaultDeviceAuthKey => Properties.Settings.Default.autoConnectDeviceAuthKey;
 
-        bool _continuousMode = true;
 
-        public bool ContinuousMode
-        {
-            get { return _continuousMode; }
-            set
-            {
-                _continuousMode = value;
-
-                Setting.Set("ContinuousMode", _continuousMode);
+        public bool ContinuousMode {
+            get => Properties.Settings.Default.continuousMode;
+            set {
+                Properties.Settings.Default.continuousMode = value;
+                Properties.Settings.Default.Save();
 
                 InvokePropertyChanged("ContinuousMode");
             }
         }
 
-        bool _enableFileOutput = false;
-
-        public bool EnableFileOutput
-        {
-            get { return _enableFileOutput; }
-            set
-            {
-                _enableFileOutput = value;
-
-                Setting.Set("FileOutput", _enableFileOutput);
+        public bool EnableFileOutput {
+            get => Properties.Settings.Default.fileOutput;
+            set {
+                Properties.Settings.Default.fileOutput = value;
+                Properties.Settings.Default.Save();
 
                 InvokePropertyChanged("EnableFileOutput");
             }
         }
 
-        bool _enableCSVOutput = false;
-
-        public bool EnableCSVOutput
-        {
-            get { return _enableCSVOutput; }
-            set
-            {
-                _enableCSVOutput = value;
-
-                Setting.Set("CSVOutput", _enableCSVOutput);
+        public bool EnableCSVOutput {
+            get => Properties.Settings.Default.csvOutput;
+            set {
+                Properties.Settings.Default.csvOutput = value;
+                Properties.Settings.Default.Save();
 
                 InvokePropertyChanged("EnableCSVOutput");
             }
         }
 
-        bool _enableOscOutput = true;
-
-        public bool EnableOscOutput
-        {
-            get { return _enableOscOutput; }
-            set
-            {
-                _enableOscOutput = value;
-
-                Setting.Set("OscOutput", _enableOscOutput);
+        public bool EnableOscOutput {
+            get => Properties.Settings.Default.oscOutput;
+            set {
+                Properties.Settings.Default.oscOutput = value;
+                Properties.Settings.Default.Save();
 
                 InvokePropertyChanged("EnableOscOutput");
             }
         }
 
-        bool _guard = false;
+        bool _guard;
 
-        DeviceHeartrateFileOutput _fileOutput = null;
+        DeviceHeartrateFileOutput _fileOutput;
 
-        DeviceHeartrateCSVOutput _csvOutput = null;
+        DeviceHeartrateCSVOutput _csvOutput;
 
-        DeviceHeartrateOscOutput _oscOutput = null;
+        DeviceHeartrateOscOutput _oscOutput;
 
         // --------------------------------------
-
-        public MainWindowViewModel()
-        {
-            ContinuousMode = Setting.Get("ContinuousMode", true);
-            EnableFileOutput = Setting.Get("FileOutput", false);
-            EnableCSVOutput = Setting.Get("CSVOutput", false);
-            EnableOscOutput = Setting.Get("OscOutput", true);
-        }
 
         ~MainWindowViewModel()
         {
             Device = null;
         }
 
-        void UpdateStatusText()
-        {
-            if (Device != null)
-            {
-                switch (Device.Status)
-                {
-                    case Devices.DeviceStatus.OFFLINE:
+        void UpdateStatusText() {
+            if (Device != null) {
+                switch (Device.Status) {
+                    case DeviceStatus.OFFLINE:
                         StatusText = "No device connected";
                         break;
-                    case Devices.DeviceStatus.ONLINE_UNAUTH:
+                    case DeviceStatus.ONLINE_UNAUTH:
                         StatusText = string.Format("Connected to {0} | Not auth", Device.Name);
                         break;
-                    case Devices.DeviceStatus.ONLINE_AUTH:
+                    case DeviceStatus.ONLINE_AUTH:
                         StatusText = string.Format("Connected to {0} | Auth", Device.Name);
                         break;
                 }
             }
-            else
-            {
+            else {
                 StatusText = "No device connected";
             }
         }
 
-        private void OnDevicePropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == "Status")
-            {
-                System.Windows.Application.Current.Dispatcher.Invoke((Action)delegate {
+        private void OnDevicePropertyChanged(object sender, PropertyChangedEventArgs e) {
+            if (e.PropertyName == "Status") {
+                Application.Current.Dispatcher.Invoke(delegate {
                     DeviceUpdate();
                 });
 
-                if (Device != null)
-                {
+                if (Device != null) {
                     // Connection lost, we try to re-connect
-                    if (Device.Status == Devices.DeviceStatus.OFFLINE && _guard)
-                    {
+                    if (Device.Status == DeviceStatus.OFFLINE && _guard) {
                         _guard = false;
                         Device.Connect();
                     }
-                    else if (Device.Status != Devices.DeviceStatus.OFFLINE)
-                    {
+                    else if (Device.Status != DeviceStatus.OFFLINE) {
                         _guard = true;
                     }
                 }
             }
-            else if (e.PropertyName == "HeartrateMonitorStarted")
-            {
+            else if (e.PropertyName == "HeartrateMonitorStarted") {
                 CommandManager.InvalidateRequerySuggested();
             }
         }
 
-        private void DeviceUpdate()
-        {
-            if (Device != null)
-            {
-                IsConnected = Device.Status != Devices.DeviceStatus.OFFLINE;
+        private void DeviceUpdate() {
+            if (Device != null) {
+                IsConnected = Device.Status != DeviceStatus.OFFLINE;
             }
 
             UpdateStatusText();
@@ -220,28 +181,22 @@ namespace MiBand_Heartrate
         
         ICommand _command_auto_connect;
 
-        public ICommand Command_Auto_Connect
-        {
-            get
-            {
-                if (_command_auto_connect == null)
-                {
-                    _command_auto_connect = new RelayCommand<object>("connect", "Connect to a device", o =>
-                    {
+        public ICommand Command_Auto_Connect {
+            get {
+                return _command_auto_connect ??= new RelayCommand<object>("connect",
+                    "Connect to a device", o => {
                         var bluetooth = new BLE(new[]
-                            { "System.Devices.Aep.DeviceAddress", "System.Devices.Aep.IsConnected" });
+                            {"System.Devices.Aep.DeviceAddress", "System.Devices.Aep.IsConnected"});
 
                         var defaultDeviceVersion = DefaultDeviceVersionSetting;
                         var defaultDeviceName = DefaultDeviceName;
                         var defaultDeviceAuthKey = DefaultDeviceAuthKey;
 
-                        void OnBluetoothAdded(DeviceWatcher sender, DeviceInformation args)
-                        {
+                        void OnBluetoothAdded(DeviceWatcher sender, DeviceInformation args) {
                             if (args.Name != defaultDeviceName) return;
-                            
+
                             Device device;
-                            switch (defaultDeviceVersion)
-                            {
+                            switch (defaultDeviceVersion) {
                                 case "2":
                                 case "3":
                                     device = new MiBand2_3_Device(args);
@@ -258,8 +213,7 @@ namespace MiBand_Heartrate
 
                             Device = device;
 
-                            if (bluetooth.Watcher != null)
-                            {
+                            if (bluetooth.Watcher != null) {
                                 bluetooth.Watcher.Added -= OnBluetoothAdded;
                             }
 
@@ -269,122 +223,75 @@ namespace MiBand_Heartrate
                         bluetooth.Watcher.Added += OnBluetoothAdded;
 
                         bluetooth.StartWatcher();
-                    }, o => { return Device == null || Device.Status == DeviceStatus.OFFLINE; });
-                }
-
-                return _command_auto_connect;
+                    }, o => Device == null || Device.Status == DeviceStatus.OFFLINE);
             }
         }
 
         ICommand _command_connect;
 
-        public ICommand Command_Connect
-        {
-            get
-            {
-                if (_command_connect == null)
-                {
-                    _command_connect = new RelayCommand<object>("connect", "Connect to a device", o =>
-                    {
+        public ICommand Command_Connect {
+            get {
+                return _command_connect ??= new RelayCommand<object>("connect",
+                    "Connect to a device", o => {
                         var dialog = new ConnectionWindow(this);
                         dialog.ShowDialog();
-                    }, o =>
-                    {
-                        return Device == null || Device.Status == Devices.DeviceStatus.OFFLINE;
-                    });
-                }
-
-                return _command_connect;
+                    }, o => Device == null || Device.Status == DeviceStatus.OFFLINE);
             }
         }
 
         ICommand _command_disconnect;
 
-        public ICommand Command_Disconnect
-        {
-            get
-            {
-                if (_command_disconnect == null)
-                {
-                    _command_disconnect = new RelayCommand<object>("disconnect", "Disconnect form connect device", o =>
-                    {
-                        if (Device != null)
-                        {
+        public ICommand Command_Disconnect {
+            get {
+                return _command_disconnect ??= new RelayCommand<object>("disconnect",
+                    "Disconnect form connect device", o => {
+                        if (Device != null) {
                             _guard = false;
                             Device.Disconnect();
                             Device = null;
-                        } 
-                        
-                        Device = null;
-                    }, o =>
-                    {
-                        return Device != null && Device.Status != Devices.DeviceStatus.OFFLINE;
-                    });
-                }
+                        }
 
-                return _command_disconnect;
+                        Device = null;
+                    }, o => Device != null && Device.Status != DeviceStatus.OFFLINE);
             }
         }
 
         ICommand _command_start;
 
-        public ICommand Command_Start
-        {
-            get
-            {
-                if (_command_start == null)
-                {
-                    _command_start = new RelayCommand<object>("device.start", "Start heartrate monitoring", o =>
-                    {
+        public ICommand Command_Start {
+            get {
+                return _command_start ??= new RelayCommand<object>("device.start",
+                    "Start heartrate monitoring", o => {
                         Device.StartHeartrateMonitor(ContinuousMode);
 
-                        if (_enableFileOutput)
-                        {
+                        if (EnableFileOutput) {
                             _fileOutput = new DeviceHeartrateFileOutput("heartrate.txt", Device);
                         }
 
-                        if (_enableCSVOutput)
-                        {
+                        if (EnableCSVOutput) {
                             _csvOutput = new DeviceHeartrateCSVOutput("heartrate.csv", Device);
                         }
 
-                        if (_enableOscOutput)
-                        {
+                        if (EnableOscOutput) {
                             _oscOutput = new DeviceHeartrateOscOutput(Device);
                         }
-
-                    }, o =>
-                    {
-                        return Device != null && Device.Status == Devices.DeviceStatus.ONLINE_AUTH && !Device.HeartrateMonitorStarted;
-                    });
-                }
-
-                return _command_start;
+                    },
+                    o => Device is {Status: DeviceStatus.ONLINE_AUTH, HeartrateMonitorStarted: false});
             }
         }
 
         ICommand _command_stop;
 
-        public ICommand Command_Stop
-        {
-            get
-            {
-                if (_command_stop == null)
-                {
-                    _command_stop = new RelayCommand<object>("device.stop", "Stop heartrate monitoring", o =>
-                    {
+        public ICommand Command_Stop {
+            get {
+                return _command_stop ??= new RelayCommand<object>("device.stop",
+                    "Stop heartrate monitoring", o => {
                         Device.StopHeartrateMonitor();
 
                         _fileOutput = null;
                         _csvOutput = null;
                         _oscOutput = null;
-                    }, o =>
-                    {
-                        return Device != null && Device.HeartrateMonitorStarted;
-                    });
-                }
-
-                return _command_stop;
+                    }, o => Device is {HeartrateMonitorStarted: true});
             }
         }
     }

@@ -30,9 +30,9 @@ namespace MiBand_Heartrate
 
     public class RelayCommand<T> : RelayCommand
     {
-        readonly Action<T> _execute = null;
+        readonly Action<T> _execute;
 
-        readonly Predicate<T> _canExecute = null;
+        readonly Predicate<T> _canExecute;
 
         public RelayCommand(string name, string description, Action<T> execute)
             : this(name, description, execute, null) { }

@@ -1,7 +1,6 @@
 using System;
-using System.IO;
 using System.ComponentModel;
-
+using System.IO;
 using MiBand_Heartrate.Devices;
 
 namespace MiBand_Heartrate.Extras
@@ -31,7 +30,7 @@ namespace MiBand_Heartrate.Extras
 
         private void OnDeviceChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == "Heartrate" && Setting.Get("CSVOutput", false))
+            if (e.PropertyName == "Heartrate" && Properties.Settings.Default.csvOutput)
             {
                 try
                 {
@@ -45,7 +44,7 @@ namespace MiBand_Heartrate.Extras
 
                     using (StreamWriter f = new StreamWriter(_filename, true))
                     {
-                        f.WriteLine(string.Format("{0},{1}", DateTime.Now, _device.Heartrate));
+                        f.WriteLine($"{DateTime.Now},{_device.Heartrate}");
                     }
                 }
                 catch (Exception err)

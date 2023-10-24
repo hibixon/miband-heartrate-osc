@@ -25,8 +25,7 @@ namespace MiBand_Heartrate
 
         // --------------------------------------
 
-        public BLE(string[] filters)
-        {
+        public BLE(string[] filters) {
             Watcher = DeviceInformation.CreateWatcher(
                 BluetoothLEDevice.GetDeviceSelectorFromPairingState(true),
                 filters,
@@ -34,50 +33,44 @@ namespace MiBand_Heartrate
             );
         }
 
-        ~BLE()
-        {
-            if (Watcher != null)
-            {
-                StopWatcher();
+        ~BLE() {
+            try {
+                if (Watcher != null) {
+                    StopWatcher();
+                }
+            }
+            catch (Exception e) {
+                Console.WriteLine(e);
             }
             Watcher = null;
         }
 
-        public void StartWatcher()
-        {
-            if (Watcher != null)
-            {
+        public void StartWatcher() {
+            if (Watcher != null) {
                 Watcher.Start();
             }
         }
 
-        public void StopWatcher()
-        {
-            if (Watcher != null && Watcher.Status == DeviceWatcherStatus.Started)
-            {
+        public void StopWatcher() {
+            if (Watcher != null && Watcher.Status == DeviceWatcherStatus.Started) {
                 Watcher.Stop();
             }
         }
 
         // --------------------------------------
 
-        static async public void Write(GattCharacteristic characteristic, byte[] data)
-        {
-            using (var stream = new DataWriter())
-            {
+        static async public void Write(GattCharacteristic characteristic, byte[] data) {
+            using (var stream = new DataWriter()) {
                 stream.WriteBytes(data);
 
-                try
-                {
+                try {
                     GattCommunicationStatus r = await characteristic.WriteValueAsync(stream.DetachBuffer());
 
                     if (r != GattCommunicationStatus.Success)
                     {
-                        Console.WriteLine(string.Format("Unable to write on {0} - {1}", characteristic.Uuid, r));
+                        Console.WriteLine("Unable to write on {0} - {1}", characteristic.Uuid, r);
                     }
-                }
-                catch (Exception e)
-                {
+                } catch (Exception e) {
                     Console.WriteLine(e);
                 }
             }

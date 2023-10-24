@@ -4,10 +4,12 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using Windows.Devices.Bluetooth;
 using Windows.Devices.Bluetooth.GenericAttributeProfile;
 using Windows.Devices.Enumeration;
 using Windows.Storage.Streams;
+using MiBand_Heartrate.Extras;
 
 namespace MiBand_Heartrate.Devices
 {
@@ -30,19 +32,19 @@ namespace MiBand_Heartrate.Devices
         BluetoothLEDevice _connectedDevice;
 
 
-        GattDeviceService _heartrateService = null;
+        GattDeviceService _heartrateService;
 
-        GattCharacteristic _heartrateCharacteristic = null;
+        GattCharacteristic _heartrateCharacteristic;
 
-        GattCharacteristic _heartrateNotifyCharacteristic = null;
+        GattCharacteristic _heartrateNotifyCharacteristic;
 
-        GattDeviceService _sensorService = null;
+        GattDeviceService _sensorService;
 
 
 
-        Thread _keepHeartrateAliveThread = null;
+        Thread _keepHeartrateAliveThread;
 
-        bool _continuous = false;
+        bool _continuous;
 
         string _deviceId = "";
 
@@ -120,7 +122,7 @@ namespace MiBand_Heartrate.Devices
                     }
                     else
                     {
-                        Extras.MessageWindow.ShowError("Authentication failed (1)");
+                        MessageWindow.ShowError("Authentication failed (1)");
                     }
                 }
                 else if (headers[1] == 0x02)
@@ -146,7 +148,7 @@ namespace MiBand_Heartrate.Devices
                     }
                     else
                     {
-                        Extras.MessageWindow.ShowError("Authentication failed (3)");
+                        MessageWindow.ShowError("Authentication failed (3)");
                     }
                 }
             }
@@ -278,7 +280,7 @@ namespace MiBand_Heartrate.Devices
                         {
                             BLE.Write(_heartrateCharacteristic, new byte[] { 0x15, 0x01, 0x01 });
 
-                            _keepHeartrateAliveThread = new Thread(new ThreadStart(RunHeartrateKeepAlive));
+                            _keepHeartrateAliveThread = new Thread(RunHeartrateKeepAlive);
                             _keepHeartrateAliveThread.Start();
                         }
                         else
@@ -293,7 +295,7 @@ namespace MiBand_Heartrate.Devices
                     }
                 }
 
-                System.Windows.Application.Current.Dispatcher.Invoke((Action)delegate {
+                Application.Current.Dispatcher.Invoke(delegate {
                     HeartrateMonitorStarted = true;
                 });
             });
@@ -332,7 +334,7 @@ namespace MiBand_Heartrate.Devices
                 _sensorService = null;
             }
 
-            System.Windows.Application.Current.Dispatcher.Invoke((Action)delegate {
+            Application.Current.Dispatcher.Invoke(delegate {
                 HeartrateMonitorStarted = false;
             });
 

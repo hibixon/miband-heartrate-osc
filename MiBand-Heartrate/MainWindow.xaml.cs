@@ -1,16 +1,15 @@
-using System;
-using System.Linq;
+using System.ComponentModel;
 using System.Drawing;
+using System.Linq;
 using System.Windows;
 using System.Windows.Forms;
-
 using MiBand_Heartrate.Extras;
 
 namespace MiBand_Heartrate
 {
     public partial class MainWindow : Window
     {
-        MainWindowViewModel _model = null;
+        MainWindowViewModel _model;
 
         public MainWindow()
         {
@@ -31,7 +30,7 @@ namespace MiBand_Heartrate
             }
         }
 
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        private void Window_Closing(object sender, CancelEventArgs e)
         {
             if (_model != null)
             {
