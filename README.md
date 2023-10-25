@@ -131,8 +131,7 @@ If "Send OSC to VRChat" is enabled, this app will continue to send the following
 |/avatar/parameters/HR/Int|Int|Heart rate per min [0, 255]|
 |/avatar/parameters/HR/Float|Float|Normalized Heart rate ([0, 255] -> [-1, 1])|
 |/avatar/parameters/HR/HalfFloat|Float|Normalized Heart rate ([0, 255] -> [0, 1]) <br> This is useful when controlling shape keys with Radial.|
-|/avatar/parameters/HR/Beat|Int|1 : QRS Interval (Temporarily set it to 1/5 of the RR interval) <br> 0 : Other times|
-|/avatar/parameters/HR/Pulse|Bool|True : QRS Interval (Temporarily set it to 1/5 of the RR interval) <br> False : Other times|
+|/avatar/parameters/HR/Beat|Bool|True : QRS Interval (Temporarily set it to 1/5 of the RR interval) <br> False : Other times|
 |/avatar/parameters/HR/BeatToggle|Bool|Reverses with each heartbeat|
 |/avatar/parameters/HR/Connected|Bool|True if device is connected and sending data|
 |/avatar/parameters/HR/Min|Int|Minimum heart rate per min in session [0, 255] (not implemented yet)|

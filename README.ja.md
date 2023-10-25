@@ -140,8 +140,7 @@ Windows10でMi Bandデバイスで心拍数を取得します。
 |/avatar/parameters/HR/Int|Int|心拍数（毎分） [0, 255]|
 |/avatar/parameters/HR/Float|Float|正規化された心拍数（毎分） ([0, 255] -> [-1, 1])|
 |/avatar/parameters/HR/HalfFloat|Float|正規化された心拍数（毎分） ([0, 255] -> [0, 1]) <br> これはラジアルを使用したシェイプキーの操作をするときに有効です。[参考リンク](https://note.com/citron_vr/n/n7d54ebaebd83)|
-|/avatar/parameters/HR/Beat|Int|1 : QRS時間（ドックンの時間）(心拍の1/5の時間としています) <br> 0 : それ以外の時間|
-|/avatar/parameters/HR/Pulse|Bool|True : QRS時間（ドックンの時間）(心拍の1/5の時間としています) <br> False : それ以外の時間|
+|/avatar/parameters/HR/Beat|Bool|True : QRS時間（ドックンの時間）(心拍の1/5の時間としています) <br> False : それ以外の時間|
 |/avatar/parameters/HR/BeatToggle|Bool|心拍ごとに値が反転します|
 |/avatar/parameters/HR/Connected|Bool|True if device is connected and sending data|
 |/avatar/parameters/HR/Min|Int|Minimum heart rate per min in session [0, 255] (not implemented yet)|
