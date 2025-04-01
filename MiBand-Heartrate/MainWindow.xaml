@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MiBand_Heartrate"
         mc:Ignorable="d"
-        Title="Heartrate Monitor" Width="400" Height="420" MinHeight="420" MinWidth="400" Closing="Window_Closing"  Icon="icon.ico">
+        Title="Heartrate Monitor" Width="400" Height="440" MinHeight="440" MinWidth="400" Closing="Window_Closing"  Icon="icon.ico">
 
     <Window.Resources>
         <ResourceDictionary Source="Style.xaml"></ResourceDictionary>
@@ -87,6 +87,22 @@
                         <Label Content="{Binding Device.MaxHeartrate}"></Label>
                         <Label>bpm</Label>
                     </StackPanel>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Label FontSize="18" Margin="0 5" Content="{Binding Device.Battery}"/>
+                    <Label FontSize="18" Margin="0 5">% Battery</Label>
+                    <Label FontSize="18" Margin="0 5" Foreground="Green">
+                        <Label.Style>
+                            <Style TargetType="Label">
+                                <Setter Property="Content" Value=""/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Device.IsCharging}" Value="True">
+                                        <Setter Property="Content" Value="(Charging)"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Label.Style>
+                    </Label>
                 </StackPanel>
             </StackPanel>
         </GroupBox>

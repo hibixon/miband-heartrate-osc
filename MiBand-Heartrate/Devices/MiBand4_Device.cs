@@ -15,45 +15,33 @@ namespace MiBand_Heartrate.Devices
 {
     public class MiBand4_Device : Device
     {
+        // Existing constants
         const string AUTH_SRV_ID = "0000fee1-0000-1000-8000-00805f9b34fb";
         const string AUTH_CHAR_ID = "00000009-0000-3512-2118-0009af100700";
-
         const string HEARTRATE_SRV_ID = "0000180d-0000-1000-8000-00805f9b34fb";
         const string HEARTRATE_CHAR_ID = "00002a39-0000-1000-8000-00805f9b34fb";
         const string HEARTRATE_NOTIFY_CHAR_ID = "00002a37-0000-1000-8000-00805f9b34fb";
-
         const string SENSOR_SRV_ID = "0000fee0-0000-1000-8000-00805f9b34fb";
         const string SENSOR_CHAR_ID = "00000001-0000-3512-2118-0009af100700";
+        const string BATTERY_CHAR_ID = "00000006-0000-3512-2118-0009af100700";
 
-        // --------------------------------------
-
+        // Fields
         byte[] _key;
-
         BluetoothLEDevice _connectedDevice;
-
-
         GattDeviceService _heartrateService;
-
         GattCharacteristic _heartrateCharacteristic;
-
         GattCharacteristic _heartrateNotifyCharacteristic;
-
         GattDeviceService _sensorService;
-
-
-
+        GattDeviceService _batteryService;
+        GattCharacteristic _batteryNotifyCharacteristic;
         Thread _keepHeartrateAliveThread;
-
         bool _continuous;
-
         string _deviceId = "";
-
 
         public MiBand4_Device(DeviceInformation d, string key)
         {
             Name = d.Name;
             Model = DeviceModel.MIBAND_4;
-
             _key = EncodeKey(key);
             _deviceId = d.Id;
         }
@@ -188,12 +176,11 @@ namespace MiBand_Heartrate.Devices
             if (_connectedDevice == null)
             {
                 var task = Task.Run(async () => await BluetoothLEDevice.FromIdAsync(_deviceId));
-                
                 _connectedDevice = task.Result;
                 _connectedDevice.ConnectionStatusChanged += OnDeviceConnectionChanged;
+                Status = DeviceStatus.ONLINE_UNAUTH;
 
-                Status = Devices.DeviceStatus.ONLINE_UNAUTH;
-
+                InitializeBatteryService(); // NEW
                 Authenticate();
             }
         }
@@ -208,6 +195,7 @@ namespace MiBand_Heartrate.Devices
 
         public override void Disconnect()
         {
+            // Existing disconnect logic
             StopHeartrateMonitor();
 
             if (_connectedDevice != null)
@@ -215,8 +203,23 @@ namespace MiBand_Heartrate.Devices
                 _connectedDevice.Dispose();
                 _connectedDevice = null;
             }
+            try
+            {
+                if (_batteryNotifyCharacteristic != null)
+                {
+                    _batteryNotifyCharacteristic.ValueChanged -= OnBatteryNotify;
+                    _batteryNotifyCharacteristic = null;
+                }
+                _batteryService?.Dispose();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Disconnect error: {ex.Message}");
+            }
+            _batteryService?.Dispose();
+            _batteryService = null;
 
-            Status = Devices.DeviceStatus.OFFLINE;
+            Status = DeviceStatus.OFFLINE;
         }
 
         public override void Dispose()
@@ -360,6 +363,49 @@ namespace MiBand_Heartrate.Devices
             }
         }
 
+        private async void InitializeBatteryService()
+        {
+            try
+            {
+                var batteryService = await _connectedDevice.GetGattServicesForUuidAsync(new Guid(SENSOR_SRV_ID));
+                if (batteryService.Status != GattCommunicationStatus.Success || batteryService.Services.Count == 0) return;
+
+                _batteryService = batteryService.Services[0];
+                var characteristic = await _batteryService.GetCharacteristicsForUuidAsync(new Guid(BATTERY_CHAR_ID));
+                if (characteristic.Status != GattCommunicationStatus.Success || characteristic.Characteristics.Count == 0) return;
+
+                _batteryNotifyCharacteristic = characteristic.Characteristics[0];
+                await _batteryNotifyCharacteristic.WriteClientCharacteristicConfigurationDescriptorAsync(GattClientCharacteristicConfigurationDescriptorValue.Notify);
+                _batteryNotifyCharacteristic.ValueChanged += OnBatteryNotify;
+
+                var result = await _batteryNotifyCharacteristic.ReadValueAsync();
+                if (result.Status == GattCommunicationStatus.Success)
+                {
+                    UpdateBatteryValue(result.Value);
+                }
+            }
+            catch { }
+        }
+
+        private void UpdateBatteryValue(IBuffer buffer)
+        {
+            try
+            {
+                if (buffer == null || buffer.Length < 3) return;
+
+                byte[] rawData = new byte[buffer.Length];
+                DataReader.FromBuffer(buffer).ReadBytes(rawData);
+
+                Battery = rawData[1];
+                IsCharging = rawData[2] == 0x01;
+            }
+            catch { }
+        }
+
+        private void OnBatteryNotify(GattCharacteristic sender, GattValueChangedEventArgs args)
+        {
+            UpdateBatteryValue(args.CharacteristicValue);
+        }
 
         void RunHeartrateKeepAlive()
         {

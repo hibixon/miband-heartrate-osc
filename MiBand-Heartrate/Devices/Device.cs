@@ -4,7 +4,8 @@ namespace MiBand_Heartrate.Devices
 {
     public enum DeviceStatus { OFFLINE, ONLINE_UNAUTH, ONLINE_AUTH }
 
-    public enum DeviceModel {
+    public enum DeviceModel
+    {
         [Description("Hidden")]
         DUMMY,
 
@@ -19,12 +20,10 @@ namespace MiBand_Heartrate.Devices
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
-
         string _name = "";
-
         public string Name
         {
-            get { return _name; }
+            get => _name;
             set
             {
                 _name = value;
@@ -32,11 +31,10 @@ namespace MiBand_Heartrate.Devices
             }
         }
 
-        DeviceStatus _status = Devices.DeviceStatus.OFFLINE;
-
+        DeviceStatus _status = DeviceStatus.OFFLINE;
         public DeviceStatus Status
         {
-            get { return _status; }
+            get => _status;
             internal set
             {
                 _status = value;
@@ -44,15 +42,14 @@ namespace MiBand_Heartrate.Devices
             }
         }
 
-
         public DeviceModel Model { get; internal set; }
 
-
         ushort _heartrate;
-
-        public ushort Heartrate {
-            get { return _heartrate; }
-            internal set {
+        public ushort Heartrate
+        {
+            get => _heartrate;
+            internal set
+            {
                 _heartrate = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Heartrate"));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("MinHeartrate"));
@@ -60,36 +57,36 @@ namespace MiBand_Heartrate.Devices
             }
         }
 
-
         ushort _minHeartrate = 1000;
-
-        public ushort MinHeartrate {
-            get { 
-                if (_heartrate < _minHeartrate && _heartrate != 0) {
+        public ushort MinHeartrate
+        {
+            get
+            {
+                if (_heartrate < _minHeartrate && _heartrate != 0)
+                {
                     _minHeartrate = _heartrate;
                 }
                 return _minHeartrate;
             }
         }
 
-
         ushort _maxHeartrate;
-
-        public ushort MaxHeartrate {
-            get { 
-                if (_heartrate > _maxHeartrate) {
+        public ushort MaxHeartrate
+        {
+            get
+            {
+                if (_heartrate > _maxHeartrate)
+                {
                     _maxHeartrate = _heartrate;
                 }
-                return _maxHeartrate; 
+                return _maxHeartrate;
             }
         }
 
-
         bool _heartrateMonitorStarted;
-
         public bool HeartrateMonitorStarted
         {
-            get { return _heartrateMonitorStarted; }
+            get => _heartrateMonitorStarted;
             internal set
             {
                 _heartrateMonitorStarted = value;
@@ -97,20 +94,33 @@ namespace MiBand_Heartrate.Devices
             }
         }
 
-        public object DeviceStatus { get; internal set; }
+        private byte _battery;
+        public byte Battery
+        {
+            get => _battery;
+            internal set
+            {
+                _battery = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Battery)));
+            }
+        }
 
-        // --------------------------------------
+        private bool _isCharging;
+        public bool IsCharging
+        {
+            get => _isCharging;
+            internal set
+            {
+                _isCharging = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsCharging)));
+            }
+        }
 
         public abstract void Dispose();
-
         public abstract void Connect();
-
         public abstract void Disconnect();
-
         public abstract void Authenticate();
-
         public abstract void StartHeartrateMonitor(bool continuous = false);
-
         public abstract void StopHeartrateMonitor();
     }
 }
